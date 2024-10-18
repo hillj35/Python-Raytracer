@@ -1,4 +1,6 @@
 import sys
+from vec3 import vec3 as color, vec3 as vec3
+from color import write_color
 
 def write_image(height, width, filename):
     with open(f"{filename}.ppm", "w") as file:
@@ -12,15 +14,8 @@ def write_image(height, width, filename):
             print(f"Scanlines Remaining: {height - j}", end="\r")
 
             for i in range(width):
-                r = i / (width - 1)
-                g = j / (height - 1)
-                b = 0
-
-                ir = int(255.999 * r)
-                ig = int(255.999 * g)
-                ib = int(255.999 * b)
-
-                file.write(f"{ir} {ig} {ib}\n")
+                pixel_color = color(i/(width-1), j/(height-1), 0)
+                write_color(file, pixel_color)
 
         sys.stdout.write("\033[K")
         print("Done Writing")
