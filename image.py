@@ -1,6 +1,6 @@
 import sys
-from vec3 import vec3 as color, vec3 as vec3
-from color import write_color
+from TracerTypes.vec3 import vec3 as color, vec3 as vec3
+from TracerTypes.color import write_color
 
 def write_image(height, width, filename):
     with open(f"{filename}.ppm", "w") as file:
