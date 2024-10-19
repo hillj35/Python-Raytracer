@@ -1,9 +1,28 @@
 import sys
+import math
+import TracerTypes.vec3 
 from TracerTypes.vec3 import vec3 as color, vec3 as vec3
 from TracerTypes.color import write_color
 from TracerTypes.ray import ray
 
+def hit_sphere(center: vec3, radius: float, ray: "ray") -> float:
+    oc = center - ray._origin
+    a = ray._direction.length_squared()
+    h = TracerTypes.vec3.dot(ray._direction, oc)
+    c = oc.length_squared() - radius * radius
+    discriminant = h * h - a * c
+
+    if discriminant < 0:
+        return -1.0
+    else:
+        return (h - math.sqrt(discriminant)) / a
+
 def ray_color(ray: "ray") -> color:
+    t = hit_sphere(vec3(0,0,-1), 0.5, ray)
+    if t > 0.0:
+        normal = (ray.at(t) - vec3(0,0,-1)).normalized()
+        return 0.5 * color(normal.r + 1, normal.g + 1, normal.b + 1)
+
     unit_direction = ray._direction.normalized()
     a = 0.5 * (unit_direction.y + 1.0)
     return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0)

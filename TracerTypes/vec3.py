@@ -1,5 +1,13 @@
 import math
 
+def dot(lhv: "vec3", rhv: "vec3") -> float:
+    return lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z
+
+def cross(lhv: "vec3", rhv: "vec3") -> "vec3":
+    return vec3(lhv.y * rhv.z - lhv.z * rhv.y,
+                lhv.z * rhv.x - lhv.x * rhv.z,
+                lhv.x * rhv.y - lhv.y * rhv.x)
+
 class vec3:
     def __init__(self, x=0, y=0, z=0):
         self.x = x
