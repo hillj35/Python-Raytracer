@@ -13,5 +13,6 @@ def write_image(aspect_ratio: float, width: int, filename: str):
     cam = camera()
     cam.aspect_ratio = aspect_ratio
     cam.image_width = width
+    cam.samples_per_pixel = 100
 
     cam.render(world, filename)
