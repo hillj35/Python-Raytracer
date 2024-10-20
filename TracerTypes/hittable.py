@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from TracerTypes.vec3 import vec3, dot
 from TracerTypes.ray import ray
+from TracerTypes.tracer_util import interval
 
 
 class hit_record:
@@ -20,7 +21,7 @@ class hit_record:
 # abstract class
 class hittable(ABC):
     @abstractmethod
-    def hit(self, r: ray, ray_tmin: float, ray_tmax: float) -> "hit_record":
+    def hit(self, r: ray, ray_t: interval) -> "hit_record":
         """Return true if ray hits the hittable, false otherwise"""
         pass
     
@@ -34,13 +35,13 @@ class hittable_list(hittable):
     def clear(self):
         self.objects.clear()
 
-    def hit(self, r, ray_tmin, ray_tmax):
+    def hit(self, r, ray_t):
         rec = hit_record()
         hit_anything = False
-        closest_so_far = ray_tmax
+        closest_so_far = ray_t.max
 
         for object in self.objects:
-            temp_rec = object.hit(r, ray_tmin, closest_so_far)
+            temp_rec = object.hit(r, interval(ray_t.min, closest_so_far))
             if temp_rec.is_hit:
                 hit_anything = True
                 closest_so_far = temp_rec.t

@@ -8,7 +8,7 @@ class sphere(hittable):
         self.center = center
         self.radius = max(0, radius)
 
-    def hit(self, r, ray_tmin, ray_tmax):
+    def hit(self, r, ray_t):
         rec = hit_record()
         rec.is_hit = False
         
@@ -25,9 +25,9 @@ class sphere(hittable):
 
         # find the nearest root that lies in the acceptable range
         root = (h - sqrtd) / a
-        if root <= ray_tmin or ray_tmax <= root:
+        if not ray_t.surrounds(root):
             root = (h + sqrtd) / a
-            if root <= ray_tmin or ray_tmax <= root:
+            if not ray_t.surrounds(root):
                 return rec
             
         rec.t = root
