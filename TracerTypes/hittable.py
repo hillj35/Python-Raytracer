@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from TracerTypes.vec3 import vec3, dot
+from TracerTypes.material import material
 from TracerTypes.ray import ray
 from TracerTypes.tracer_util import interval
 
@@ -7,6 +8,7 @@ from TracerTypes.tracer_util import interval
 class hit_record:
     p = vec3(0,0,0)
     normal = vec3(0,0,0)
+    mat: material = None
     t = 0
     is_front_face = False
     is_hit = False

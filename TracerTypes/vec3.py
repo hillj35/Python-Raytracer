@@ -22,6 +22,9 @@ def random_on_hemisphere(normal: "vec3") -> "vec3":
         return on_unit_sphere
     else:
         return -on_unit_sphere
+    
+def reflect(v: "vec3", n: "vec3") -> "vec3":
+    return v - 2 * dot(v, n) * n
 
 class vec3:
     def __init__(self, x=0, y=0, z=0):
@@ -41,7 +44,7 @@ class vec3:
     def __sub__(self, other: "vec3"):
         return vec3(self.x - other.x, self.y - other.y, self.z - other.z)
         
-    def __iadd__(self, other): 
+    def __iadd__(self, other: "vec3"): 
         self.x += other.x
         self.y += other.y
         self.z += other.z
@@ -53,12 +56,18 @@ class vec3:
         self.z -= other.z
         return self
 
-    def __mul__(self, other: float) -> "vec3":
-        return vec3(self.x * other, self.y * other, self.z * other)
+    def __mul__(self, other) -> "vec3":
+        if isinstance(other, float):
+            return vec3(self.x * other, self.y * other, self.z * other)
+        if isinstance(other, vec3):
+            return vec3(self.x * other.x, self.y * other.y, self.z * other.z)
     
     def __rmul__(self, other: float) -> "vec3":
-        return vec3(self.x * other, self.y * other, self.z * other)
-    
+        if isinstance(other, float):
+            return vec3(self.x * other, self.y * other, self.z * other)
+        if isinstance(other, vec3):
+            return vec3(self.x * other.x, self.y * other.y, self.z * other.z)
+            
     def __truediv__(self, other: float) -> "vec3":
         return vec3(self.x / other, self.y / other, self.z / other)
 
@@ -81,7 +90,13 @@ class vec3:
         return self.x * self.x + self.y * self.y + self.z * self.z
 
     def normalized(self) -> "vec3":
+        if self.magnitude == 0:
+            return vec3(0,0,0)
         return self / self.magnitude()
+    
+    def near_zero(self) -> bool:
+        s = 1e-8
+        return abs(self.x) < s and abs(self.y) < s and abs(self.z) < s
     
     # static methods
     def random(min: float = 0, max: float = 1) -> "vec3":

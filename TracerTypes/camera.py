@@ -5,6 +5,7 @@ from TracerTypes.ray import ray
 from TracerTypes.vec3 import vec3 as vec3, vec3 as color, random_unit_vector
 from TracerTypes.tracer_util import interval, random_float
 from TracerTypes.color import write_color
+from TracerTypes.material import scatter_record
 
 class camera:
     aspect_ratio = 1.0
@@ -77,8 +78,10 @@ class camera:
 
         rec = world.hit(r, interval(0.001, float("inf")))
         if rec.is_hit:
-            direction = rec.normal + random_unit_vector()
-            return 0.5 * self.ray_color(ray(rec.p, direction), depth - 1, world)
+            scatter_rec = rec.mat.scatter(r, rec)
+            if scatter_rec.did_scatter:
+                return scatter_rec.attenuation * self.ray_color(scatter_rec.scattered_ray, depth - 1, world)
+            return color(0,0,0)
 
         unit_direction = r._direction.normalized()
         a = 0.5 * (unit_direction.y + 1.0)
