@@ -3,7 +3,7 @@ import math
 
 from TracerTypes.hittable import hittable
 from TracerTypes.ray import ray
-from TracerTypes.vec3 import vec3 as vec3, vec3 as color, cross
+from TracerTypes.vec3 import vec3 as vec3, vec3 as color, cross, random_in_unit_disk
 from TracerTypes.tracer_util import interval, random_float, degrees_to_radians
 from TracerTypes.color import write_color
 from TracerTypes.material import scatter_record
@@ -19,6 +19,9 @@ class camera:
     lookat = vec3(0,0,-1)
     vup = vec3(0,1,0)
 
+    defocus_angle = 0
+    focus_dist = 10
+
     image_height = 0
     center = vec3(0,0,0)
     pixel00_loc = vec3(0,0,0)
@@ -28,6 +31,8 @@ class camera:
     u = vec3()
     v = vec3()
     w = vec3()
+    defocus_disk_u = vec3()
+    defocus_disk_v = vec3()
 
     def render(self, world: hittable, filename: str):
         self.initialize()
@@ -64,10 +69,9 @@ class camera:
         self.center = self.lookfrom
 
         # Camera 
-        focal_length = (self.lookfrom - self.lookat).magnitude()
         theta = degrees_to_radians(self.vfov)
         h = math.tan(theta / 2)
-        viewport_height = 2.0 * h * focal_length
+        viewport_height = 2.0 * h * self.focus_dist
         viewport_width = viewport_height * (self.image_width / self.image_height)
 
         # Calculate u,v,w unit basis vectors for the camera coordinate frame
@@ -84,8 +88,13 @@ class camera:
         self.pixel_delta_v = viewport_v / self.image_height
 
         # Calculate location of upper left pixel
-        viewport_upper_left = self.center - (focal_length * self.w) - viewport_u / 2 - viewport_v / 2
+        viewport_upper_left = self.center - (self.focus_dist * self.w) - viewport_u / 2 - viewport_v / 2
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
+
+        # Calculate the camera defocus disk basis vectors
+        defocus_radius = self.focus_dist * math.tan(degrees_to_radians(self.defocus_angle / 2))
+        self.defocus_disk_u = self.u * defocus_radius
+        self.defocus_disk_v = self.v * defocus_radius
 
 
     def ray_color(self, r: ray, depth: int, world: hittable) -> color:
@@ -104,12 +113,12 @@ class camera:
         return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0)
     
     def get_ray(self, i: int, j: int) -> ray:
-        # Construct a camera ray originating from the origin and directed 
+        # Construct a camera ray originating from the defocus disk and directed 
         # at randomly sampled point around the pixel location i, j
 
         offset = self.sample_square()
         pixel_sample = self.pixel00_loc + ((i + offset.x) * self.pixel_delta_u) + ((j + offset.y) * self.pixel_delta_v)
-        ray_origin = self.center
+        ray_origin = self.center if self.defocus_angle <= 0 else self.defocus_disk_sample()
         ray_direction = pixel_sample - ray_origin
 
         return ray(ray_origin, ray_direction)
@@ -117,3 +126,8 @@ class camera:
     def sample_square(self) -> vec3:
         # returns the vector to a random point in the [-0.5, -0.5] - [0.5, 0.5] unit square
         return vec3(random_float(0, 1) - 0.5, random_float(0, 1) - 0.5, 0)
+    
+    def defocus_disk_sample(self) -> vec3:
+        """Returns a random point in the camera defocus disk"""
+        p = random_in_unit_disk()
+        return self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)

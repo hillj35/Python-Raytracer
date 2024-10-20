@@ -33,4 +33,7 @@ def write_image(aspect_ratio: float, width: int, filename: str):
     cam.lookat = vec3(0, 0, -1)
     cam.vup = vec3(0, 1, 0)
 
+    cam.defocus_angle = 10
+    cam.focus_dist = 3.4
+
     cam.render(world, filename)

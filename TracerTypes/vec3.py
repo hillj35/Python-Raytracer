@@ -10,7 +10,7 @@ def cross(lhv: "vec3", rhv: "vec3") -> "vec3":
                 lhv.x * rhv.y - lhv.y * rhv.x)
 
 def random_unit_vector() -> "vec3":
-    while(True):
+    while True:
         p = vec3.random(-1, 1)
         lensq = p.length_squared()
         if 1e-160 < lensq <= 1:
@@ -31,6 +31,12 @@ def refract(uv: "vec3", n: "vec3", etai_over_etat: float) -> "vec3":
     r_out_perp = etai_over_etat * (uv + cos_theta * n)
     r_out_parallel = -math.sqrt(abs(1.0 - r_out_perp.length_squared())) * n
     return r_out_perp + r_out_parallel
+
+def random_in_unit_disk() -> "vec3":
+    while True:
+        p = vec3(random_float(-1, 1), random_float(-1, 1), 0)
+        if p.length_squared() < 1:
+            return p
 
 class vec3:
     def __init__(self, x=0, y=0, z=0):
