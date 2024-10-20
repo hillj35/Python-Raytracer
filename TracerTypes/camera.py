@@ -1,9 +1,10 @@
 import sys
+import math
 
 from TracerTypes.hittable import hittable
 from TracerTypes.ray import ray
-from TracerTypes.vec3 import vec3 as vec3, vec3 as color, random_unit_vector
-from TracerTypes.tracer_util import interval, random_float
+from TracerTypes.vec3 import vec3 as vec3, vec3 as color, cross
+from TracerTypes.tracer_util import interval, random_float, degrees_to_radians
 from TracerTypes.color import write_color
 from TracerTypes.material import scatter_record
 
@@ -12,6 +13,11 @@ class camera:
     image_width = 100
     samples_per_pixel = 10
     max_depth = 10
+    
+    vfov = 90
+    lookfrom = vec3(0,0,0)
+    lookat = vec3(0,0,-1)
+    vup = vec3(0,1,0)
 
     image_height = 0
     center = vec3(0,0,0)
@@ -19,6 +25,9 @@ class camera:
     pixel_delta_u = vec3(0,0,0)
     pixel_delta_v = vec3(0,0,0)
     pixel_sameples_scale = 0.1
+    u = vec3()
+    v = vec3()
+    w = vec3()
 
     def render(self, world: hittable, filename: str):
         self.initialize()
@@ -52,23 +61,30 @@ class camera:
 
         self.pixel_sameples_scale = 1.0 / self.samples_per_pixel
 
-        self.center = vec3(0, 0, 0)
+        self.center = self.lookfrom
 
         # Camera 
-        focal_length = 1.0
-        viewport_height = 2.0
+        focal_length = (self.lookfrom - self.lookat).magnitude()
+        theta = degrees_to_radians(self.vfov)
+        h = math.tan(theta / 2)
+        viewport_height = 2.0 * h * focal_length
         viewport_width = viewport_height * (self.image_width / self.image_height)
 
+        # Calculate u,v,w unit basis vectors for the camera coordinate frame
+        self.w = (self.lookfrom - self.lookat).normalized()
+        self.u = cross(self.vup, self.w).normalized()
+        self.v = cross(self.w, self.u)
+
         # Calculate vectors across vertical and horizontal viewport edges
-        viewport_u = vec3(viewport_width, 0, 0)
-        viewport_v = vec3(0, -viewport_height, 0)
+        viewport_u = viewport_width * self.u
+        viewport_v = viewport_height * -self.v
 
         # Horizontal and Vertical delta vectors from pixel to pixel
         self.pixel_delta_u = viewport_u / self.image_width
         self.pixel_delta_v = viewport_v / self.image_height
 
         # Calculate location of upper left pixel
-        viewport_upper_left = self.center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2
+        viewport_upper_left = self.center - (focal_length * self.w) - viewport_u / 2 - viewport_v / 2
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
 
 

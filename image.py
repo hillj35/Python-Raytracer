@@ -1,3 +1,5 @@
+import math
+
 from TracerTypes.camera import camera
 from TracerTypes.hittable import hittable_list
 from TracerTypes.sphere import sphere
@@ -25,5 +27,10 @@ def write_image(aspect_ratio: float, width: int, filename: str):
     cam.aspect_ratio = aspect_ratio
     cam.image_width = width
     cam.samples_per_pixel = 10
+
+    cam.vfov = 20
+    cam.lookfrom = vec3(-2, 2, 1)
+    cam.lookat = vec3(0, 0, -1)
+    cam.vup = vec3(0, 1, 0)
 
     cam.render(world, filename)
